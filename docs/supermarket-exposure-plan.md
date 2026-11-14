@@ -17,13 +17,37 @@ Implemented.
 - The counter, the item list, `Pay`, and the cashier `Next` prompts are built by `scripts/store/checkout.gd`.
 - `project.godot` opens the start screen and loads the `Session` autoload.
 - The session rules, the three level resources, and the headless tests are in place.
+- Store logic scripts live under `scripts/store/` (`player.gd`, `grocery_zone.gd`, `shopper.gd`, `shopper_spawner.gd`, plus the existing gate and checkout scripts).
+- The therapist page is `site/index.html`. It lists the three levels and links the game at `http://127.0.0.1:8077/`.
+- Until `Scenes/store/store.tscn` exists, `Scenes/app/session.tscn` shows checkout plus `Enter …` buttons that call `collect` for each zone on the active level.
 
 Not implemented.
 
-- `Scenes/store/store.tscn`, the player, the zones, and the shoppers.
-- The web export and `site/index.html`.
+- `Scenes/store/store.tscn`, the player scene, the zone meshes, baked navigation, and shopper art.
+- The web export under `build/web`.
 
-Until the store scene exists, a level button opens `Scenes/app/session.tscn` so the checkout UI can be seen. When `Scenes/store/store.tscn` exists, that button opens the store instead. Humans still add a `Checkout` node there and attach `scripts/store/checkout.gd`.
+When `Scenes/store/store.tscn` exists, `Session.begin_level` already prefers that path over `session.tscn`. Humans add a `Checkout` node there and attach `scripts/store/checkout.gd`.
+
+## Human attach (after `store.tscn`)
+
+Attach each script in the Godot inspector. Set `zone_id` on every grocery zone. Code finds nodes by these names.
+
+| Node name | Type | Script | Notes |
+| --- | --- | --- | --- |
+| `Player` | `CharacterBody3D` | `res://scripts/store/player.gd` | Add a `CollisionShape3D`. Optional `Camera3D` child; the script creates one if missing. |
+| `ZoneMilk` … `ZoneRice` | `Area3D` | `res://scripts/store/grocery_zone.gd` | Export `zone_id` (`milk`, `bread`, `apples`, `eggs`, `rice`). Keep all five in the scene; inactive ids disable themselves via `ZoneGate`. |
+| `Navigation` | `NavigationRegion3D` | none | Bake the mesh after floor and walls exist. |
+| `ShopperSpawner` | `Node3D` | `res://scripts/store/shopper_spawner.gd` | Optional `shopper_scene` export; otherwise spawner builds capsule bodies with `shopper.gd`. |
+| `Checkout` | `Node3D` | `res://scripts/store/checkout.gd` | Front of store. |
+| `Cashier` | `Node3D` | none | Stationary. Do not parent shoppers here and do not attach `shopper.gd`. |
+
+Next steps once the scene is wired.
+
+1. Open the store at level 1 and walk into each active zone with the player. Confirm `N of M` updates and repeats do not raise N.
+2. Run level 2 and confirm 10 shoppers spawn and crossing a zone as a shopper does not change the counter.
+3. Run level 3 with cashier checkout and five zones.
+4. Export web with thread support off, serve `build/web` on port 8077, and open `site/index.html` beside the export link.
+5. Remove or hide the debug collect bar on `session.tscn` if it is no longer needed for therapist demos.
 
 ## The session
 
@@ -188,9 +212,9 @@ These two lists do not share files.
 Code can start before Godot is installed. The headless check waits until `godot` is on `PATH`.
 
 1. Implemented. The types, the three resources, `tests/session_test.gd`, `tests/zone_gate_test.gd`, and `tests/checkout_gate_test.gd` are in the repo. When Godot is installed, run the headless check. The log must contain every line under How to check.
-2. Add `site/index.html`. Use the title `supermarket`. List the three levels with their people counts, zone counts, and checkout kind. Link the game at `http://127.0.0.1:8077/`. Keep this file out of `build/web`. Godot overwrites that folder on export.
+2. Implemented. `site/index.html` uses the title `supermarket`, lists the three levels, and links the game at `http://127.0.0.1:8077/`. Keep this file out of `build/web`. Godot overwrites that folder on export.
 3. Implemented. The start screen and level select are under `Scenes/app/`. `Start` opens level select. Each button is filled from its resource.
-4. Add the store scripts. They use the node names above. They do not create the floor, the meshes, or the zones.
+4. Implemented. Store scripts under `scripts/store/` use the node names above. They do not create the floor, the meshes, or the zones.
 5. Export the web build after `Scenes/store/store.tscn` exists. Thread support is off. The renderer stays `gl_compatibility`. Exclude `addons/GodotTogether/` from the preset. Serve `build/web` with `python3 -m http.server 8077`.
 
 Humans start when Godot 4.7.2 is installed.
