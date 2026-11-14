@@ -27,6 +27,10 @@ static func is_player_body(body: Node) -> bool:
 	return body.is_in_group("player")
 
 
+static func wants_collect(zone_id: String, level: LevelConfig, body: Node) -> bool:
+	return is_player_body(body) and active_for_level(zone_id, level)
+
+
 func _sync_level() -> void:
 	var active := active_for_level(zone_id, Session.state.level)
 	visible = active
@@ -40,6 +44,5 @@ func _sync_level() -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
-	if not is_player_body(body):
-		return
-	Session.state.collect(zone_id)
+	if wants_collect(zone_id, Session.state.level, body):
+		Session.state.collect(zone_id)
