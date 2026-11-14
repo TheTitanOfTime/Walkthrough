@@ -24,9 +24,16 @@ Implemented.
 Not implemented.
 
 - Polished shopper art (capsule stand-ins spawn until `shopper_scene` is set).
-- The web export under `build/web`.
 
 `Scenes/store/store.tscn` is wired from the supermarket art blockout: `Player`, five grocery zones, `Navigation`, `ShopperSpawner`, `Checkout`, and `Cashier`. `Session.begin_level` opens that scene. Zone positions are approximate near shelves and can be nudged in the editor.
+
+Web export uses preset `Web` in `export_presets.cfg` (threads off, `addons/GodotTogether/` excluded). Output is `build/web/` (gitignored). Rebuild with:
+
+```
+godot --headless --path . --export-release "Web" build/web/index.html
+```
+
+Serve with `python3 -m http.server 8077` from `build/web`, then open `site/index.html` or `http://127.0.0.1:8077/`.
 
 ## Attach the store scripts
 
@@ -230,7 +237,7 @@ Code can start before Godot is installed. The headless check waits until `godot`
 2. Implemented. `site/index.html` uses the title `supermarket`, lists the three levels, and links the game at `http://127.0.0.1:8077/`. Keep this file out of `build/web`. Godot overwrites that folder on export.
 3. Implemented. The start screen and level select are under `Scenes/app/`. `Start` opens level select. Each button is filled from its resource.
 4. Implemented. Store scripts under `scripts/store/` use the node names above. They do not create the floor, the meshes, or the zones.
-5. Export the web build after `Scenes/store/store.tscn` exists. Thread support is off. The renderer stays `gl_compatibility`. Exclude `addons/GodotTogether/` from the preset. Serve `build/web` with `python3 -m http.server 8077`.
+5. Implemented. `export_presets.cfg` has the `Web` preset (thread support off, GodotTogether excluded). Export to `build/web/index.html`. Serve `build/web` with `python3 -m http.server 8077`.
 
 Humans start when Godot 4.7.2 is installed.
 
