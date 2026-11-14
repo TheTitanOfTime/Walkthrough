@@ -8,6 +8,23 @@ Humans build the store in the Godot editor. Code writes the scripts, the tests, 
 
 Godot 4.7.2 is required to build the store, run the headless check, and export the game. `addons/GodotTogether/src/scripts/GodotTogether.gd` pins that version, and `project.godot` tags 4.7. The therapist page does not need Godot.
 
+## Status
+
+Implemented.
+
+- The start screen is `Scenes/app/start.tscn`. The title is `supermarket` and the button says `Start`.
+- Level select is `Scenes/app/level_select.tscn`. The three buttons are built from the level resources.
+- The counter, the item list, `Pay`, and the cashier `Next` prompts are built by `scripts/store/checkout.gd`.
+- `project.godot` opens the start screen and loads the `Session` autoload.
+- The session rules, the three level resources, and the headless tests are in place.
+
+Not implemented.
+
+- `Scenes/store/store.tscn`, the player, the zones, and the shoppers.
+- The web export and `site/index.html`.
+
+Until the store scene exists, a level button opens `Scenes/app/session.tscn` so the checkout UI can be seen. When `Scenes/store/store.tscn` exists, that button opens the store instead. Humans still add a `Checkout` node there and attach `scripts/store/checkout.gd`.
+
 ## The session
 
 1. The page loads on a start screen. The title is `supermarket`. The button says `Start`.
@@ -135,7 +152,7 @@ Code edits these paths.
 | `scripts/store/shopper.gd` | Walks a random navmesh point, waits, repeats |
 | `scripts/store/shopper_spawner.gd` | Instances `npc_count` shoppers. Instances none when the count is 0 |
 | `scripts/store/checkout_gate.gd` | Pure function. Allows checkout only when `required_complete` is true |
-| `scripts/store/checkout.gd` | Kiosk or cashier UI, built by the script |
+| `scripts/store/checkout.gd` | Implemented. Kiosk or cashier UI, built by the script |
 | `export_presets.cfg` | Web export, thread support off |
 | `site/index.html` | Therapist page. Links to the export. The patient does not play this page |
 
@@ -170,9 +187,9 @@ These two lists do not share files.
 
 Code can start before Godot is installed. The headless check waits until `godot` is on `PATH`.
 
-1. Add the types, the three resources, and `tests/session_test.gd`. When Godot is installed, run the headless check. The log must contain every line under How to check.
+1. Implemented. The types, the three resources, `tests/session_test.gd`, `tests/zone_gate_test.gd`, and `tests/checkout_gate_test.gd` are in the repo. When Godot is installed, run the headless check. The log must contain every line under How to check.
 2. Add `site/index.html`. Use the title `supermarket`. List the three levels with their people counts, zone counts, and checkout kind. Link the game at `http://127.0.0.1:8077/`. Keep this file out of `build/web`. Godot overwrites that folder on export.
-3. Add the start screen and level select under `Scenes/app/`. `Start` opens level select. Each button is filled from its resource.
+3. Implemented. The start screen and level select are under `Scenes/app/`. `Start` opens level select. Each button is filled from its resource.
 4. Add the store scripts. They use the node names above. They do not create the floor, the meshes, or the zones.
 5. Export the web build after `Scenes/store/store.tscn` exists. Thread support is off. The renderer stays `gl_compatibility`. Exclude `addons/GodotTogether/` from the preset. Serve `build/web` with `python3 -m http.server 8077`.
 
