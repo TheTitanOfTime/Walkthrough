@@ -1,5 +1,10 @@
 extends Node3D
 
+const ScreenKit := preload("res://scripts/app/screen_kit.gd")
+const SessionState := preload("res://scripts/domain/session_state.gd")
+const LevelConfig := preload("res://scripts/domain/level_config.gd")
+const CheckoutGate := preload("res://scripts/store/checkout_gate.gd")
+
 var _column: VBoxContainer
 var _count: Label
 var _item: Label

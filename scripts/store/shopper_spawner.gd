@@ -31,7 +31,7 @@ static func desired_count(level: LevelConfig) -> int:
 static func find_navigation(root: Node) -> NavigationRegion3D:
 	if root == null:
 		return null
-	if root is NavigationRegion3D and root.name == "Navigation":
+	if root is NavigationRegion3D:
 		return root
 	for child in root.get_children():
 		var found := find_navigation(child)

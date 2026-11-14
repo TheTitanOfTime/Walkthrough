@@ -19,7 +19,7 @@ Implemented.
 - The session rules, the three level resources, and the headless tests are in place.
 - Store logic scripts live under `scripts/store/` (`player.gd`, `grocery_zone.gd`, `shopper.gd`, `shopper_spawner.gd`, plus the existing gate and checkout scripts).
 - The therapist page is `site/index.html`. It lists the three levels and links the game at `http://127.0.0.1:8077/`.
-- Until `Scenes/store/store.tscn` exists, `Scenes/app/session.tscn` shows checkout plus `Enter …` buttons that call `collect` for each zone on the active level.
+- Until `Scenes/store/store.tscn` exists, `Scenes/app/session.tscn` shows checkout plus `Enter` buttons from `scripts/app/session_screen.gd`. Each button calls `collect` for one zone on the active level.
 
 Not implemented.
 
@@ -28,26 +28,41 @@ Not implemented.
 
 When `Scenes/store/store.tscn` exists, `Session.begin_level` already prefers that path over `session.tscn`. Humans add a `Checkout` node there and attach `scripts/store/checkout.gd`.
 
-## Human attach (after `store.tscn`)
+## Attach the store scripts
 
-Attach each script in the Godot inspector. Set `zone_id` on every grocery zone. Code finds nodes by these names.
+Humans create `Scenes/store/store.tscn` in the editor. Code does not write that folder. Attach each script to the node name in this table. The game finds those names.
 
-| Node name | Type | Script | Notes |
-| --- | --- | --- | --- |
-| `Player` | `CharacterBody3D` | `res://scripts/store/player.gd` | Add a `CollisionShape3D`. Optional `Camera3D` child; the script creates one if missing. |
-| `ZoneMilk` … `ZoneRice` | `Area3D` | `res://scripts/store/grocery_zone.gd` | Export `zone_id` (`milk`, `bread`, `apples`, `eggs`, `rice`). Keep all five in the scene; inactive ids disable themselves via `ZoneGate`. |
-| `Navigation` | `NavigationRegion3D` | none | Bake the mesh after floor and walls exist. |
-| `ShopperSpawner` | `Node3D` | `res://scripts/store/shopper_spawner.gd` | Optional `shopper_scene` export; otherwise spawner builds capsule bodies with `shopper.gd`. |
-| `Checkout` | `Node3D` | `res://scripts/store/checkout.gd` | Front of store. |
-| `Cashier` | `Node3D` | none | Stationary. Do not parent shoppers here and do not attach `shopper.gd`. |
+| Node name | Type | Script |
+| --- | --- | --- |
+| `Player` | `CharacterBody3D` | `res://scripts/store/player.gd` |
+| `ZoneMilk` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
+| `ZoneBread` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
+| `ZoneApples` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
+| `ZoneEggs` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
+| `ZoneRice` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
+| `Navigation` | `NavigationRegion3D` | none |
+| `ShopperSpawner` | `Node3D` | `res://scripts/store/shopper_spawner.gd` |
+| `Checkout` | `Node3D` | `res://scripts/store/checkout.gd` |
+| `Cashier` | `Node3D` | none |
 
-Next steps once the scene is wired.
+`player.gd` reads WASD and the arrow keys with `Input.is_physical_key_pressed`. It does not use an input map or mouse look. It adds the body to the `player` group. It creates a `Camera3D` when the node has none, makes that camera current, and keeps it behind the body. Add a `CollisionShape3D` on `Player`. Without a shape, the body falls.
 
-1. Open the store at level 1 and walk into each active zone with the player. Confirm `N of M` updates and repeats do not raise N.
-2. Run level 2 and confirm 10 shoppers spawn and crossing a zone as a shopper does not change the counter.
-3. Run level 3 with cashier checkout and five zones.
-4. Export web with thread support off, serve `build/web` on port 8077, and open `site/index.html` beside the export link.
-5. Remove or hide the debug collect bar on `session.tscn` if it is no longer needed for therapist demos.
+Set `zone_id` on each grocery zone to `milk`, `bread`, `apples`, `eggs`, or `rice`, matching the node. Put the zone mesh and a `CollisionShape3D` under the `Area3D`. `grocery_zone.gd` calls `ZoneGate.keeps`. A zone that is not on the active level hides, disables its collision shape, and does not call `collect`. On enter, the zone calls `Session.state.collect` only for a body named `Player` or a body in the `player` group, and only when `ZoneGate.keeps` is true for that id.
+
+`shopper_spawner.gd` reads `Session.state.level.npc_count` and instances that many shoppers. Level 1 instances none. It searches the current scene for a `NavigationRegion3D` named `Navigation`. A node with that name and a different type is ignored. The spawner does not instance `Cashier`. Leave the `shopper_scene` export empty to use a capsule `CharacterBody3D` with `res://scripts/store/shopper.gd`. To use people art, assign a packed scene whose root is a `CharacterBody3D`. The spawner attaches `shopper.gd` to that root and removes the `player` group. `shopper.gd` walks to a random point on that navigation map, waits, and repeats. It never calls `collect`.
+
+Place `Checkout` at the front of the store. Place `Cashier` at the front with no script.
+
+After the nodes exist, link the store to the session.
+
+1. Save the scene as `res://Scenes/store/store.tscn`. `Session.begin_level` already opens that path when the file exists, and opens `Scenes/app/session.tscn` until then.
+2. Add a floor the player and the shoppers can stand on. Bake `Navigation` after the floor and walls are in place. Put `ShopperSpawner` on that floor.
+3. Play level 1 and walk the player into each active zone. `N of M` rises once per zone. Entering the same zone again does not raise N. Eggs and rice stay hidden.
+4. Play level 2. Ten shoppers spawn. A shopper that crosses a zone leaves the counter unchanged.
+5. Play level 3. Five zones show, twenty shoppers walk, and the cashier `Next` prompts run only when the list is complete.
+6. Export the web build after that scene exists. Thread support stays off. Keep `site/index.html` out of `build/web`. Serve the export with `python3 -m http.server 8077`. The therapist page links `http://127.0.0.1:8077/`.
+
+`scripts/app/session_screen.gd` stays on `Scenes/app/session.tscn` only. Its `Enter` buttons sit above the checkout panel so `Pay` and cashier `Next` can be tried before the store scene exists. The store scene does not use that script.
 
 ## The session
 
