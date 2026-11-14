@@ -26,9 +26,10 @@ func _finds_navigation_not_cashier() -> bool:
 	var cashier := Node3D.new()
 	cashier.name = "Cashier"
 	root.add_child(cashier)
+	# Wrong type under Cashier. Sibling same-name decoys force Godot to rename the real region.
 	var decoy := Node3D.new()
 	decoy.name = "Navigation"
-	root.add_child(decoy)
+	cashier.add_child(decoy)
 	var nav := NavigationRegion3D.new()
 	nav.name = "Navigation"
 	root.add_child(nav)
