@@ -15,10 +15,11 @@ Implemented.
 - The start screen is `Scenes/app/start.tscn`. The title is `supermarket` and the button says `Start`.
 - Level select is `Scenes/app/level_select.tscn`. The three buttons are built from the level resources.
 - The counter, the item list, `Pay`, and the cashier `Next` prompts are built by `scripts/store/checkout.gd`.
-- `project.godot` opens the start screen and loads the `Session` autoload.
+- `project.godot` opens `res://Scenes/app/start.tscn` and loads the `Session` autoload. Do not point the main scene at the store UID.
 - The session rules, the three level resources, and the headless tests are in place.
 - Store logic scripts live under `scripts/store/` (`player.gd`, `grocery_zone.gd`, `shopper.gd`, `shopper_spawner.gd`, plus the existing gate and checkout scripts).
-- The therapist page is `site/index.html`. It lists the three levels and links the game at `http://127.0.0.1:8077/`.
+- The therapist page is `site/index.html`. For the browser demo, serve it as `build/web/index.html` in front of the game at `build/web/play/` via `scripts/serve_web_demo.sh`. Level buttons open `play/index.html?level=N` so shopper count follows that level. Opening `play/` without a query shows Start → level select.
+- `ShopperSpawner` instances `LevelConfig.npc_count` shoppers on the nav mesh and skips points near shelf-like nodes.
 - Until `Scenes/store/store.tscn` exists, `Scenes/app/session.tscn` shows checkout plus `Enter` buttons from `scripts/app/session_screen.gd`. Each button calls `collect` for one zone on the active level.
 
 Not implemented.
@@ -33,7 +34,7 @@ Web export uses preset `Web` in `export_presets.cfg` (threads off, `addons/Godot
 godot --headless --path . --export-release "Web" build/web/index.html
 ```
 
-Serve with `python3 -m http.server 8077` from `build/web`, then open `site/index.html` or `http://127.0.0.1:8077/`.
+Prefer `scripts/serve_web_demo.sh` (exports into `build/web/play/`, copies the therapist page to `build/web/index.html`, serves port 8077). Open `http://127.0.0.1:8077/` first.
 
 ## Attach the store scripts
 
