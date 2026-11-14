@@ -18,8 +18,8 @@ Implemented.
 - `project.godot` opens `res://Scenes/app/start.tscn` and loads the `Session` autoload. Do not point the main scene at the store UID.
 - The session rules, the three level resources, and the headless tests are in place.
 - Store logic scripts live under `scripts/store/` (`player.gd`, `grocery_zone.gd`, `shopper.gd`, `shopper_spawner.gd`, plus the existing gate and checkout scripts).
-- The therapist page is `site/index.html`. For the browser demo, serve it as `build/web/index.html` in front of the game at `build/web/play/` via `scripts/serve_web_demo.sh`. Level buttons open `play/index.html?level=N` so shopper count follows that level. Opening `play/` without a query shows Start → level select.
-- `ShopperSpawner` instances `LevelConfig.npc_count` shoppers on the nav mesh and skips points near shelf-like nodes.
+- Browser demo is one site: therapist opens `build/web/index.html` (from `site/index.html`), selects a mode, and the patient plays `play/index.html?level=N` in the store. No in-game Start/level-select on that path. Checkout returns to the therapist page. Use `Scripts/serve_web_demo.sh`.
+- `ShopperSpawner` instances `LevelConfig.npc_count` shoppers on the nav mesh and skips points near shelf-like nodes. Grocery zones show a translucent marker so the patient can find them.
 - Until `Scenes/store/store.tscn` exists, `Scenes/app/session.tscn` shows checkout plus `Enter` buttons from `scripts/app/session_screen.gd`. Each button calls `collect` for one zone on the active level.
 
 Not implemented.
