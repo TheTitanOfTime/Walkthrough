@@ -24,7 +24,7 @@ Implemented.
 
 Not implemented.
 
-- Polished shopper art (capsule stand-ins spawn until `shopper_scene` is set).
+- Optional custom `shopper_scene` (default now instances `character-employee.glb` with collision).
 
 `Scenes/store/store.tscn` is wired from the supermarket art blockout: `Player`, five grocery zones, `Navigation`, `ShopperSpawner`, `Checkout`, and `Cashier`. `Session.begin_level` opens that scene. Zone positions are approximate near shelves and can be nudged in the editor.
 
@@ -53,7 +53,7 @@ Humans create `Scenes/store/store.tscn` in the editor. Code does not write that 
 | `Checkout` | `Node3D` | `res://scripts/store/checkout.gd` |
 | `Cashier` | `Node3D` | none |
 
-`player.gd` reads WASD and the arrow keys with `Input.is_physical_key_pressed`. It does not use an input map or mouse look. It adds the body to the `player` group. It creates a `Camera3D` when the node has none, makes that camera current, and keeps it behind the body. Add a `CollisionShape3D` on `Player`. Without a shape, the body falls.
+`player.gd` is first-person: InputMap `forward`/`backward`/`left`/`right` (WASD + arrows), mouse look while captured, Esc toggles capture, click recaptures. It adds the body to the `player` group, makes `Camera3D` current at eye height, and hides third-person mesh children. Add a `CollisionShape3D` on `Player`. Without a shape, the body falls.
 
 Set `zone_id` on each grocery zone to `milk`, `bread`, `apples`, `eggs`, or `rice`, matching the node. Put the zone mesh and a `CollisionShape3D` under the `Area3D`. `grocery_zone.gd` calls `ZoneGate.keeps`. A zone that is not on the active level hides, disables its collision shape, and does not call `collect`. On enter, the zone calls `Session.state.collect` only for a body named `Player` or a body in the `player` group, and only when `ZoneGate.keeps` is true for that id.
 
