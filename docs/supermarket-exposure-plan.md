@@ -8,6 +8,62 @@ Humans build the store in the Godot editor. Code writes the scripts, the tests, 
 
 Godot 4.7.2 is required to build the store, run the headless check, and export the game. `addons/GodotTogether/src/scripts/GodotTogether.gd` pins that version, and `project.godot` tags 4.7. The therapist page does not need Godot.
 
+## Status
+
+Implemented.
+
+- The start screen is `Scenes/app/start.tscn`. The title is `supermarket` and the button says `Start`.
+- Level select is `Scenes/app/level_select.tscn`. The three buttons are built from the level resources.
+- The counter, the item list, `Pay`, and the cashier `Next` prompts are built by `scripts/store/checkout.gd`.
+- `project.godot` opens the start screen and loads the `Session` autoload.
+- The session rules, the three level resources, and the headless tests are in place.
+- Store logic scripts live under `scripts/store/` (`player.gd`, `grocery_zone.gd`, `shopper.gd`, `shopper_spawner.gd`, plus the existing gate and checkout scripts).
+- The therapist page is `site/index.html`. It lists the three levels and links the game at `http://127.0.0.1:8077/`.
+- Until `Scenes/store/store.tscn` exists, `Scenes/app/session.tscn` shows checkout plus `Enter` buttons from `scripts/app/session_screen.gd`. Each button calls `collect` for one zone on the active level.
+
+Not implemented.
+
+- `Scenes/store/store.tscn`, the player scene, the zone meshes, baked navigation, and shopper art.
+- The web export under `build/web`.
+
+When `Scenes/store/store.tscn` exists, `Session.begin_level` already prefers that path over `session.tscn`. Humans add a `Checkout` node there and attach `scripts/store/checkout.gd`.
+
+## Attach the store scripts
+
+Humans create `Scenes/store/store.tscn` in the editor. Code does not write that folder. Attach each script to the node name in this table. The game finds those names.
+
+| Node name | Type | Script |
+| --- | --- | --- |
+| `Player` | `CharacterBody3D` | `res://scripts/store/player.gd` |
+| `ZoneMilk` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
+| `ZoneBread` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
+| `ZoneApples` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
+| `ZoneEggs` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
+| `ZoneRice` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
+| `Navigation` | `NavigationRegion3D` | none |
+| `ShopperSpawner` | `Node3D` | `res://scripts/store/shopper_spawner.gd` |
+| `Checkout` | `Node3D` | `res://scripts/store/checkout.gd` |
+| `Cashier` | `Node3D` | none |
+
+`player.gd` reads WASD and the arrow keys with `Input.is_physical_key_pressed`. It does not use an input map or mouse look. It adds the body to the `player` group. It creates a `Camera3D` when the node has none, makes that camera current, and keeps it behind the body. Add a `CollisionShape3D` on `Player`. Without a shape, the body falls.
+
+Set `zone_id` on each grocery zone to `milk`, `bread`, `apples`, `eggs`, or `rice`, matching the node. Put the zone mesh and a `CollisionShape3D` under the `Area3D`. `grocery_zone.gd` calls `ZoneGate.keeps`. A zone that is not on the active level hides, disables its collision shape, and does not call `collect`. On enter, the zone calls `Session.state.collect` only for a body named `Player` or a body in the `player` group, and only when `ZoneGate.keeps` is true for that id.
+
+`shopper_spawner.gd` reads `Session.state.level.npc_count` and instances that many shoppers. Level 1 instances none. It searches the current scene for a `NavigationRegion3D` named `Navigation`. A node with that name and a different type is ignored. The spawner does not instance `Cashier`. Leave the `shopper_scene` export empty to use a capsule `CharacterBody3D` with `res://scripts/store/shopper.gd`. To use people art, assign a packed scene whose root is a `CharacterBody3D`. The spawner attaches `shopper.gd` to that root and removes the `player` group. `shopper.gd` walks to a random point on that navigation map, waits, and repeats. It never calls `collect`.
+
+Place `Checkout` at the front of the store. Place `Cashier` at the front with no script.
+
+After the nodes exist, link the store to the session.
+
+1. Save the scene as `res://Scenes/store/store.tscn`. `Session.begin_level` already opens that path when the file exists, and opens `Scenes/app/session.tscn` until then.
+2. Add a floor the player and the shoppers can stand on. Bake `Navigation` after the floor and walls are in place. Put `ShopperSpawner` on that floor.
+3. Play level 1 and walk the player into each active zone. `N of M` rises once per zone. Entering the same zone again does not raise N. Eggs and rice stay hidden.
+4. Play level 2. Ten shoppers spawn. A shopper that crosses a zone leaves the counter unchanged.
+5. Play level 3. Five zones show, twenty shoppers walk, and the cashier `Next` prompts run only when the list is complete.
+6. Export the web build after that scene exists. Thread support stays off. Keep `site/index.html` out of `build/web`. Serve the export with `python3 -m http.server 8077`. The therapist page links `http://127.0.0.1:8077/`.
+
+`scripts/app/session_screen.gd` stays on `Scenes/app/session.tscn` only. Its `Enter` buttons sit above the checkout panel so `Pay` and cashier `Next` can be tried before the store scene exists. The store scene does not use that script.
+
 ## The session
 
 1. The page loads on a start screen. The title is `supermarket`. The button says `Start`.
@@ -135,7 +191,7 @@ Code edits these paths.
 | `scripts/store/shopper.gd` | Walks a random navmesh point, waits, repeats |
 | `scripts/store/shopper_spawner.gd` | Instances `npc_count` shoppers. Instances none when the count is 0 |
 | `scripts/store/checkout_gate.gd` | Pure function. Allows checkout only when `required_complete` is true |
-| `scripts/store/checkout.gd` | Kiosk or cashier UI, built by the script |
+| `scripts/store/checkout.gd` | Implemented. Kiosk or cashier UI, built by the script |
 | `export_presets.cfg` | Web export, thread support off |
 | `site/index.html` | Therapist page. Links to the export. The patient does not play this page |
 
@@ -170,10 +226,10 @@ These two lists do not share files.
 
 Code can start before Godot is installed. The headless check waits until `godot` is on `PATH`.
 
-1. Add the types, the three resources, and `tests/session_test.gd`. When Godot is installed, run the headless check. The log must contain every line under How to check.
-2. Add `site/index.html`. Use the title `supermarket`. List the three levels with their people counts, zone counts, and checkout kind. Link the game at `http://127.0.0.1:8077/`. Keep this file out of `build/web`. Godot overwrites that folder on export.
-3. Add the start screen and level select under `Scenes/app/`. `Start` opens level select. Each button is filled from its resource.
-4. Add the store scripts. They use the node names above. They do not create the floor, the meshes, or the zones.
+1. Implemented. The types, the three resources, `tests/session_test.gd`, `tests/zone_gate_test.gd`, and `tests/checkout_gate_test.gd` are in the repo. When Godot is installed, run the headless check. The log must contain every line under How to check.
+2. Implemented. `site/index.html` uses the title `supermarket`, lists the three levels, and links the game at `http://127.0.0.1:8077/`. Keep this file out of `build/web`. Godot overwrites that folder on export.
+3. Implemented. The start screen and level select are under `Scenes/app/`. `Start` opens level select. Each button is filled from its resource.
+4. Implemented. Store scripts under `scripts/store/` use the node names above. They do not create the floor, the meshes, or the zones.
 5. Export the web build after `Scenes/store/store.tscn` exists. Thread support is off. The renderer stays `gl_compatibility`. Exclude `addons/GodotTogether/` from the preset. Serve `build/web` with `python3 -m http.server 8077`.
 
 Humans start when Godot 4.7.2 is installed.
