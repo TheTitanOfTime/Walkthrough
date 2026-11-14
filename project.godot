@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="supermarket"
-run/main_scene="uid://nx0t3kptlr5r"
+run/main_scene="res://Scenes/app/start.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+Session="*res://scripts/domain/session.gd"
 
 [display]
 
