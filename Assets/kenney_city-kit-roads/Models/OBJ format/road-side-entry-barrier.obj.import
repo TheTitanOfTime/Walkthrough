@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://8gmw6kjr6gqi"
+path="res://.godot/imported/road-side-entry-barrier.obj-e57f1739b04f3b400387ea2b62f06dbf.mesh"
+
+[deps]
+
+files=["res://.godot/imported/road-side-entry-barrier.obj-e57f1739b04f3b400387ea2b62f06dbf.mesh"]
+
+source_file="res://Assets/kenney_city-kit-roads/Models/OBJ format/road-side-entry-barrier.obj"
+dest_files=["res://.godot/imported/road-side-entry-barrier.obj-e57f1739b04f3b400387ea2b62f06dbf.mesh", "res://.godot/imported/road-side-entry-barrier.obj-e57f1739b04f3b400387ea2b62f06dbf.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
