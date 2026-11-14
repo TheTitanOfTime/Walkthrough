@@ -23,10 +23,10 @@ Implemented.
 
 Not implemented.
 
-- `Scenes/store/store.tscn`, the player scene, the zone meshes, baked navigation, and shopper art.
+- Polished shopper art (capsule stand-ins spawn until `shopper_scene` is set).
 - The web export under `build/web`.
 
-When `Scenes/store/store.tscn` exists, `Session.begin_level` already prefers that path over `session.tscn`. Humans add a `Checkout` node there and attach `scripts/store/checkout.gd`.
+`Scenes/store/store.tscn` is wired from the supermarket art blockout: `Player`, five grocery zones, `Navigation`, `ShopperSpawner`, `Checkout`, and `Cashier`. `Session.begin_level` opens that scene. Zone positions are approximate near shelves and can be nudged in the editor.
 
 ## Attach the store scripts
 
