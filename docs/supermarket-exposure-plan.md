@@ -4,7 +4,9 @@ A therapist runs a grocery-store session in the browser and picks one of three i
 
 The patient sees a start screen, picks nothing, and walks a single store. The therapist uses the level select screen. One scene serves every level. A `LevelConfig` resource holds the intensity. A `SessionState` object holds the phase and the collected items.
 
-Install Godot 4.7.2 before you start. `addons/GodotTogether/src/scripts/GodotTogether.gd` pins that version, and `project.godot` tags 4.7. This machine may not have `godot` on `PATH`.
+Humans build the store in the Godot editor. Code writes the scripts, the tests, the level resources, the in-game screens, and a therapist page in `site/`. The two tracks edit different paths, so they can land at the same time.
+
+Godot 4.7.2 is required to build the store, run the headless check, and export the game. `addons/GodotTogether/src/scripts/GodotTogether.gd` pins that version, and `project.godot` tags 4.7. The therapist page does not need Godot.
 
 ## The session
 
@@ -97,11 +99,21 @@ Scene paths live on that autoload.
 
 `finish_checkout` is followed by a scene change to level select.
 
-## Files
+## Who edits what
 
-Create these. The `Scenes/` folder already exists. Use that capital S.
+The `Scenes/` folder already exists. Use that capital S.
 
-| File | Job |
+Humans edit these paths in the Godot editor.
+
+| Path | Job |
+| --- | --- |
+| `Assets/` | Models and textures, including the Kenney city kit |
+| `Scenes/store/store.tscn` | The one store. Floor, walls, five zones, nav region, spawner, checkout, cashier |
+| `Scenes/store/player.tscn` | The player body |
+
+Code edits these paths.
+
+| Path | Job |
 | --- | --- |
 | `scripts/domain/level_config.gd` | The resource above |
 | `scripts/domain/session_state.gd` | The rules above |
@@ -111,34 +123,65 @@ Create these. The `Scenes/` folder already exists. Use that capital S.
 | `resources/levels/level_3.tres` | Level 3 row |
 | `tests/run.gd` | Loads every `tests/*_test.gd`, calls `test()`, prints `session ok` only if all return |
 | `tests/session_test.gd` | Prints the log lines in How to check |
-| `Scenes/app/start.tscn` | Title and `Start` |
+| `tests/zone_gate_test.gd` | Zone counts 3, 4, and 5 |
+| `tests/checkout_gate_test.gd` | Short list and full list at those counts |
+| `Scenes/app/start.tscn` | In-game title and `Start` |
 | `scripts/app/start.gd` | Opens level select |
 | `Scenes/app/level_select.tscn` | Three buttons from the resources |
 | `scripts/app/level_select.gd` | Calls `start_level`, then opens the store |
-| `Scenes/store/store.tscn` | Floor, walls, player, five zones, nav region, spawner, kiosk, cashier |
-| `Scenes/store/player.tscn` | `CharacterBody3D` |
-| `scripts/store/player.gd` | WASD and arrow keys |
+| `scripts/store/player.gd` | WASD and arrow keys. Locks the camera behind the body |
 | `scripts/store/zone_gate.gd` | Pure function. Keeps a zone only when its id is on the active level |
-| `scripts/store/grocery_zone.gd` | `Area3D`. On player enter, calls `collect` |
+| `scripts/store/grocery_zone.gd` | On player enter, calls `collect` |
 | `scripts/store/shopper.gd` | Walks a random navmesh point, waits, repeats |
 | `scripts/store/shopper_spawner.gd` | Instances `npc_count` shoppers. Instances none when the count is 0 |
 | `scripts/store/checkout_gate.gd` | Pure function. Allows checkout only when `required_complete` is true |
-| `scripts/store/checkout.gd` | Kiosk or cashier UI |
+| `scripts/store/checkout.gd` | Kiosk or cashier UI, built by the script |
 | `export_presets.cfg` | Web export, thread support off |
+| `site/index.html` | Therapist page. Links to the export. The patient does not play this page |
 
-Edit `project.godot` in two places only. Add the autoload `Session` at `res://scripts/domain/session.gd`. Set the main scene to `res://Scenes/app/start.tscn`.
+`Scenes/supermarket.tscn` is an empty `Node3D`. It is not the store.
+
+Code writes two lines in `project.godot` once, before the editor saves the project. Add the autoload `Session` at `res://scripts/domain/session.gd`. Set the main scene to `res://Scenes/app/start.tscn`. After that first editor save, only humans commit `project.godot`.
+
+## Nodes the store must contain
+
+Humans create these nodes and attach the scripts. Code finds the nodes by these names. Code does not write `Scenes/store/`.
+
+| Name | Type | Script |
+| --- | --- | --- |
+| `Player` | `CharacterBody3D` | `res://scripts/store/player.gd` |
+| `ZoneMilk` | `Area3D` | `res://scripts/store/grocery_zone.gd`, zone id `milk` |
+| `ZoneBread` | `Area3D` | same script, zone id `bread` |
+| `ZoneApples` | `Area3D` | same script, zone id `apples` |
+| `ZoneEggs` | `Area3D` | same script, zone id `eggs` |
+| `ZoneRice` | `Area3D` | same script, zone id `rice` |
+| `Navigation` | `NavigationRegion3D` | none. Humans bake the mesh |
+| `ShopperSpawner` | `Node3D` | `res://scripts/store/shopper_spawner.gd` |
+| `Checkout` | `Node3D` at the front of the store | `res://scripts/store/checkout.gd` |
+| `Cashier` | `Node3D` at the front of the store | none. The cashier is not a shopper |
+
+Keep a floor about 40 by 24 meters until the art replaces it. A red pillar is enough for a walk test. `player.gd` reads WASD and the arrow keys with `Input.is_physical_key_pressed`. Do not add an input map. The camera stays behind the body. Do not add mouse look.
+
+`checkout.gd` shows the kiosk for `SELF` and the cashier prompts for `CASHIER`. `Pay`, and the `Goodbye` step, call `begin_checkout`, then `finish_checkout`, then open level select. A short list shows the remaining count and does not advance. Three presses of `Next` show `Hello`, then the item labels, then `Goodbye`.
 
 ## Build order
 
-Do these in order. Finish the check for a step before the next step.
+These two lists do not share files.
 
-1. Add the types, the three resources, and `tests/session_test.gd`. Run the headless check. The log must contain every line under Session log.
-2. Add the start screen and level select. `Start` opens level select. Each button is filled from its resource. Point the main scene at the start screen.
-3. Add the greybox store and the player. The floor is 40 by 24 meters, with wall blocks and one red pillar. Use `CharacterBody3D`. Read WASD and the arrow keys with `Input.is_physical_key_pressed`. Do not add an input map. Lock the camera behind and above the body. Do not add mouse look. Level select opens this same scene for every level.
-4. Add five zone markers, ids `milk`, `bread`, `apples`, `eggs`, and `rice`. Hide and disable a zone when `zone_gate.gd` rejects its id. Show `N of M` and the item label on the first collect.
-5. Bake a `NavigationRegion3D` on the floor. Spawn `npc_count` shoppers with `NavigationAgent3D` and avoidance on. A shopper body must not call `collect`.
-6. Add the kiosk and the cashier at the front of the store. For `SELF`, show the kiosk and hide the cashier. List collected labels. Enable `Pay` only when the gate allows it. `Pay` calls `begin_checkout`, then `finish_checkout`, then opens level select. For `CASHIER`, show the cashier and hide the kiosk. Three presses of `Next` show `Hello`, then the item labels, then `Goodbye`. `Goodbye` takes the same finish path. If the gate refuses, `Next` does not advance and the screen shows the remaining count.
-7. Export the web build. Thread support is off. The renderer stays `gl_compatibility`. Exclude `addons/GodotTogether/` from the preset. Serve `build/web` with `python3 -m http.server 8077` and open `http://127.0.0.1:8077/`.
+Code can start before Godot is installed. The headless check waits until `godot` is on `PATH`.
+
+1. Add the types, the three resources, and `tests/session_test.gd`. When Godot is installed, run the headless check. The log must contain every line under How to check.
+2. Add `site/index.html`. Use the title `supermarket`. List the three levels with their people counts, zone counts, and checkout kind. Link the game at `http://127.0.0.1:8077/`. Keep this file out of `build/web`. Godot overwrites that folder on export.
+3. Add the start screen and level select under `Scenes/app/`. `Start` opens level select. Each button is filled from its resource.
+4. Add the store scripts. They use the node names above. They do not create the floor, the meshes, or the zones.
+5. Export the web build after `Scenes/store/store.tscn` exists. Thread support is off. The renderer stays `gl_compatibility`. Exclude `addons/GodotTogether/` from the preset. Serve `build/web` with `python3 -m http.server 8077`.
+
+Humans start when Godot 4.7.2 is installed.
+
+1. Build `Scenes/store/player.tscn` and `Scenes/store/store.tscn` with the nodes listed above.
+2. Place the five zones. Leave every zone in the scene. `zone_gate.gd` hides a zone when the active level does not list its id.
+3. Bake `Navigation`.
+4. Place `Checkout` and `Cashier` at the front. Do not attach `shopper.gd` to the cashier.
 
 ## How to check
 
@@ -184,6 +227,8 @@ Leave `addons/GodotTogether/` as it is, including its folder name. Do not call `
 
 Leave `Scenes/test.tscn` unused. It is an empty `Node2D` and it is not the main scene.
 
+Humans do not edit `scripts/`, `tests/`, `resources/levels/`, `Scenes/app/`, `site/`, or `export_presets.cfg`. Code does not edit `Assets/` or `Scenes/store/`.
+
 Leave the Compatibility renderer in place. Forward+ and Mobile do not export to the web. Leave the `d3d12` line alone. It applies to Windows only.
 
 Do not add accounts, a server, a saved progress file, a dialogue editor, a copied store per level, an on-screen joystick, or a therapist PIN. The page is open to anyone who has the link, and walking expects a keyboard.
@@ -192,6 +237,8 @@ Do not add accounts, a server, a saved progress file, a dialogue editor, a copie
 
 Jolt is the 3D physics engine in `project.godot`. A single-threaded web export froze on moving bodies in Godot 4.5 beta 6. That freeze was fixed on master. Walk the release build for two minutes. If the browser freezes, switch the 3D physics engine to Godot Physics, record the switch, and stop.
 
-The store art is a grey floor, grey walls, and a red pillar. The loop can be tested on that art.
+The store art can start as a grey floor, grey walls, and a red pillar. The loop can be tested on that art. Humans replace it in `Scenes/store/` and `Assets/` without editing scripts.
+
+`project.godot` is shared only for the first autoload and main-scene edit. After the editor saves the project, a second code edit to that file will conflict with the human save.
 
 Godot 4.7 web export notes are at `https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html`. Jolt notes are at `https://docs.godotengine.org/en/4.7/tutorials/physics/using_jolt_physics.html`. The freeze report is `https://github.com/godotengine/godot/issues/109948`.
