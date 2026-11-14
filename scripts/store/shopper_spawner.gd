@@ -8,6 +8,9 @@ const LevelConfig := preload("res://scripts/domain/level_config.gd")
 @export var spawn_attempts := 40
 
 const SHOPPER_SCRIPT := preload("res://scripts/store/shopper.gd")
+const APPEARANCE := preload(
+	"res://Assets/kenney_mini-shop_2.1/Models/GLB format/character-employee.glb"
+)
 const SHELF_NAME_HINTS := [
 	"shelf",
 	"tall_shelf",
@@ -20,19 +23,36 @@ const SHELF_NAME_HINTS := [
 
 
 func _ready() -> void:
+	call_deferred("_spawn_when_ready")
+
+
+func _spawn_when_ready() -> void:
 	var level := Session.state.level
 	var count := desired_count(level)
+	if count <= 0:
+		return
 	var scope: Node = get_tree().current_scene
 	if scope == null:
 		scope = get_parent()
 	var nav := find_navigation(scope)
+	await _wait_for_navigation(nav)
 	var blocked := collect_blocked_points(scope)
 	for index in count:
 		var shopper := _make_shopper(index + 1)
+		add_child(shopper)
 		if nav != null and shopper.has_method("setup"):
 			shopper.call("setup", nav)
-		add_child(shopper)
 		shopper.global_position = pick_spawn_point(nav, blocked, global_position)
+
+
+func _wait_for_navigation(nav: NavigationRegion3D) -> void:
+	if nav == null:
+		return
+	for _attempt in 12:
+		var map := nav.get_navigation_map()
+		if map.is_valid() and NavigationServer3D.map_get_iteration_id(map) > 0:
+			return
+		await get_tree().physics_frame
 
 
 static func desired_count(level: LevelConfig) -> int:
@@ -86,10 +106,10 @@ static func is_clear_of_shelves(point: Vector3, blocked: PackedVector3Array, cle
 func pick_spawn_point(nav: NavigationRegion3D, blocked: PackedVector3Array, fallback: Vector3) -> Vector3:
 	if nav != null:
 		var map := nav.get_navigation_map()
-		if map.is_valid():
+		if map.is_valid() and NavigationServer3D.map_get_iteration_id(map) > 0:
 			for _attempt in spawn_attempts:
 				var candidate: Vector3 = NavigationServer3D.map_get_random_point(map, 1, false)
-				if is_clear_of_shelves(candidate, blocked, aisle_clearance):
+				if candidate.is_finite() and is_clear_of_shelves(candidate, blocked, aisle_clearance):
 					return candidate
 	for _attempt in spawn_attempts:
 		var local := Vector3(randf_range(-4.5, 4.5), 0.0, randf_range(1.5, 10.5))
@@ -124,4 +144,7 @@ func _capsule_body() -> CharacterBody3D:
 	shape.shape = capsule
 	shape.position = Vector3(0, 0.8, 0)
 	body.add_child(shape)
+	var look := APPEARANCE.instantiate()
+	look.name = "Appearance"
+	body.add_child(look)
 	return body

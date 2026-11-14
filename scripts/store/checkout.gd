@@ -12,13 +12,31 @@ var _lines: VBoxContainer
 var _prompt: Label
 var _pay: Button
 var _next: Button
+var _close: Button
+var _hud_panel: Control
+var _reopen: Button
+var _hud_mode := false
 var _step := 0
 
 
 func _ready() -> void:
-	_column = ScreenKit.mount(self)
+	# Full paper screen only on the session stand-in. In the 3D store, use a corner HUD.
+	if get_parent() is Control:
+		_column = ScreenKit.mount(self)
+	else:
+		_hud_mode = true
+		var hud: Dictionary = ScreenKit.mount_hud(self)
+		_column = hud["column"]
+		_hud_panel = hud["panel"]
+		_reopen = hud["reopen"]
+		_reopen.pressed.connect(_show_hud)
+		_close = ScreenKit.action_button("Close", false)
+		_close.custom_minimum_size = Vector2(300, 48)
+		_close.add_theme_font_size_override("font_size", 20)
+		_close.pressed.connect(_hide_hud)
+		_column.add_child(_close)
 	_count = ScreenKit.heading("0 of 0")
-	_count.add_theme_font_size_override("font_size", 42)
+	_count.add_theme_font_size_override("font_size", 36)
 	_column.add_child(_count)
 	_item = ScreenKit.note("")
 	_column.add_child(_item)
@@ -28,18 +46,56 @@ func _ready() -> void:
 	_prompt = ScreenKit.note("")
 	_column.add_child(_prompt)
 	_pay = ScreenKit.action_button("Pay", true)
+	_pay.custom_minimum_size = Vector2(300, 64)
 	_pay.pressed.connect(_on_pay)
 	_column.add_child(_pay)
 	_next = ScreenKit.action_button("Next", true)
+	_next.custom_minimum_size = Vector2(300, 64)
 	_next.pressed.connect(_on_next)
 	_column.add_child(_next)
 	Session.state.changed.connect(_refresh)
 	_refresh()
+	# Panel starts open so the patient can read the list; walk with Tab then click.
+	if _hud_mode:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _hud_mode:
+		return
+	# Tab toggles the list. Esc stays with the player mouse capture.
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_TAB:
+		if _hud_panel != null and _hud_panel.visible:
+			_hide_hud()
+		else:
+			_show_hud()
+		get_viewport().set_input_as_handled()
 
 
 func _exit_tree() -> void:
 	if Session.state.changed.is_connected(_refresh):
 		Session.state.changed.disconnect(_refresh)
+
+
+func _hide_hud() -> void:
+	if not _hud_mode:
+		return
+	if _hud_panel != null:
+		_hud_panel.visible = false
+	if _reopen != null:
+		_reopen.visible = true
+		_reopen.text = _count.text if _count != null and not _count.text.is_empty() else "List"
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _show_hud() -> void:
+	if not _hud_mode:
+		return
+	if _hud_panel != null:
+		_hud_panel.visible = true
+	if _reopen != null:
+		_reopen.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
 func _refresh() -> void:
@@ -62,6 +118,8 @@ func _refresh() -> void:
 	_pay.disabled = not ready
 	_next.disabled = _step >= 3 or (_step == 0 and not ready)
 	_prompt.text = _prompt_text(current, cashier, ready)
+	if _hud_mode and _reopen != null and _reopen.visible:
+		_reopen.text = _count.text
 
 
 func _fill_lines(current: SessionState, level: LevelConfig) -> void:
