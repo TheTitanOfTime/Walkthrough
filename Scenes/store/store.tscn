@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://y417dbw1ajwy" path="res://Assets/kenney_prototype-kit/Models/GLB format/floor-square.glb" id="2_p5xn0"]
 [ext_resource type="PackedScene" uid="uid://c3jl0r6k5llx0" path="res://Assets/kenney_mini-shop_2.1/Models/GLB format/wall-window.glb" id="3_nljq6"]
 [ext_resource type="PackedScene" uid="uid://dhq8qdihao54v" path="res://Assets/kenney_mini-shop_2.1/Models/GLB format/wall-door-rotate.glb" id="4_vd31b"]
-[ext_resource type="Script" path="res://scripts/store/player.gd" id="6_34c21"]
+[ext_resource type="Script" path="res://scripts/Player.gd" id="6_34c21"]
 [ext_resource type="PackedScene" uid="uid://bgnb045j624pn" path="res://Assets/kenney_mini-shop_2.1/Models/GLB format/character-employee.glb" id="6_dtlqp"]
 [ext_resource type="PackedScene" uid="uid://bx1wna52i1iux" path="res://Assets/kenney_mini-shop_2.1/Models/GLB format/shelf-bags.glb" id="7_vd31b"]
 [ext_resource type="PackedScene" uid="uid://7h8lp1vmmqoq" path="res://Assets/kenney_mini-shop_2.1/Models/GLB format/shelf-boxes.glb" id="8_dtlqp"]

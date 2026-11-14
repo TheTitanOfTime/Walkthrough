@@ -42,7 +42,7 @@ Humans create `Scenes/store/store.tscn` in the editor. Code does not write that 
 
 | Node name | Type | Script |
 | --- | --- | --- |
-| `Player` | `CharacterBody3D` | `res://scripts/store/player.gd` |
+| `Player` | `CharacterBody3D` | `res://scripts/Player.gd` |
 | `ZoneMilk` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
 | `ZoneBread` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
 | `ZoneApples` | `Area3D` | `res://scripts/store/grocery_zone.gd` |
@@ -53,7 +53,7 @@ Humans create `Scenes/store/store.tscn` in the editor. Code does not write that 
 | `Checkout` | `Node3D` | `res://scripts/store/checkout.gd` |
 | `Cashier` | `Node3D` | none |
 
-`player.gd` is first-person: InputMap `forward`/`backward`/`left`/`right` (WASD + arrows), mouse look while captured, Esc toggles capture, click recaptures. It adds the body to the `player` group, makes `Camera3D` current at eye height, and hides third-person mesh children. Add a `CollisionShape3D` on `Player`. Without a shape, the body falls.
+`scripts/Player.gd` drives the store player: InputMap WASD/arrows, mouse look on the existing `Player/Camera3D` (scene transform, not repositioned), click captures, Esc releases. It adds the body to the `player` group and sets that camera current. `scripts/store/player.gd` keeps only the `axes` helper for headless tests. Add a `CollisionShape3D` on `Player`. Without a shape, the body falls.
 
 Set `zone_id` on each grocery zone to `milk`, `bread`, `apples`, `eggs`, or `rice`, matching the node. Put the zone mesh and a `CollisionShape3D` under the `Area3D`. `grocery_zone.gd` calls `ZoneGate.keeps`. A zone that is not on the active level hides, disables its collision shape, and does not call `collect`. On enter, the zone calls `Session.state.collect` only for a body named `Player` or a body in the `player` group, and only when `ZoneGate.keeps` is true for that id.
 
@@ -193,7 +193,8 @@ Code edits these paths.
 | `scripts/app/start.gd` | Opens level select |
 | `Scenes/app/level_select.tscn` | Three buttons from the resources |
 | `scripts/app/level_select.gd` | Calls `start_level`, then opens the store |
-| `scripts/store/player.gd` | WASD and arrow keys. Locks the camera behind the body |
+| `scripts/Player.gd` | Store FPS controls and existing Player camera |
+| `scripts/store/player.gd` | `axes` helper for headless move tests only |
 | `scripts/store/zone_gate.gd` | Pure function. Keeps a zone only when its id is on the active level |
 | `scripts/store/grocery_zone.gd` | On player enter, calls `collect` |
 | `scripts/store/shopper.gd` | Walks a random navmesh point, waits, repeats |
@@ -213,7 +214,7 @@ Humans create these nodes and attach the scripts. Code finds the nodes by these 
 
 | Name | Type | Script |
 | --- | --- | --- |
-| `Player` | `CharacterBody3D` | `res://scripts/store/player.gd` |
+| `Player` | `CharacterBody3D` | `res://scripts/Player.gd` |
 | `ZoneMilk` | `Area3D` | `res://scripts/store/grocery_zone.gd`, zone id `milk` |
 | `ZoneBread` | `Area3D` | same script, zone id `bread` |
 | `ZoneApples` | `Area3D` | same script, zone id `apples` |

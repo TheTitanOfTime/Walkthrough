@@ -7,7 +7,10 @@ const JUMP_VELOCITY = 4.5
 @onready var camera = $Camera3D
 
 func _ready() -> void:
-	pass
+	add_to_group("player")
+	if camera != null:
+		camera.current = true
+
 
 func _physics_process(delta: float) -> void:
 	# Add the gravity.
@@ -28,7 +31,6 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 		velocity.z = move_toward(velocity.z, 0, SPEED)
-	
 
 	move_and_slide()
 
