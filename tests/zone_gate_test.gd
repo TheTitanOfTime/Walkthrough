@@ -1,5 +1,8 @@
 extends RefCounted
 
+const LevelConfig := preload("res://scripts/domain/level_config.gd")
+const ZoneGate := preload("res://scripts/store/zone_gate.gd")
+
 
 func test() -> bool:
 	var level_1 := LevelConfig.load_number(1)

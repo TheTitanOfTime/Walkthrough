@@ -1,6 +1,9 @@
 class_name GroceryZone
 extends Area3D
 
+const LevelConfig := preload("res://scripts/domain/level_config.gd")
+const ZoneGate := preload("res://scripts/store/zone_gate.gd")
+
 @export var zone_id: String = ""
 
 

@@ -1,6 +1,7 @@
 extends RefCounted
 
-const ShopperSpawner = preload("res://scripts/store/shopper_spawner.gd")
+const LevelConfig := preload("res://scripts/domain/level_config.gd")
+const ShopperSpawner := preload("res://scripts/store/shopper_spawner.gd")
 
 
 func test() -> bool:
@@ -16,7 +17,6 @@ func test() -> bool:
 	if ShopperSpawner.desired_count(level_2) != 10:
 		return false
 	if ShopperSpawner.desired_count(level_3) != 20:
-		push_error("desired_count level_3")
 		return false
 	return _finds_navigation_not_cashier()
 
@@ -32,14 +32,7 @@ func _finds_navigation_not_cashier() -> bool:
 	var nav := NavigationRegion3D.new()
 	nav.name = "Navigation"
 	root.add_child(nav)
-	print("children ", root.get_child_count(), " ", root.get_children())
 	var found := ShopperSpawner.find_navigation(root)
-	var cashier_nav := ShopperSpawner.find_navigation(cashier)
-	var ok := found == nav and cashier_nav == null
-	if not ok:
-		print(
-			"shopper nav debug found=%s nav=%s eq=%s cashier_nav=%s"
-			% [found, nav, found == nav, cashier_nav]
-		)
+	var ok := found == nav and ShopperSpawner.find_navigation(cashier) == null
 	root.free()
 	return ok

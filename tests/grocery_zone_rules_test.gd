@@ -1,6 +1,7 @@
 extends RefCounted
 
-const GroceryZone = preload("res://scripts/store/grocery_zone.gd")
+const LevelConfig := preload("res://scripts/domain/level_config.gd")
+const GroceryZone := preload("res://scripts/store/grocery_zone.gd")
 
 
 func test() -> bool:

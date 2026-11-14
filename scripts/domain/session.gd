@@ -1,5 +1,7 @@
 extends Node
 
+const SessionState := preload("res://scripts/domain/session_state.gd")
+
 const LEVEL_SELECT_SCENE := "res://Scenes/app/level_select.tscn"
 const START_SCENE := "res://Scenes/app/start.tscn"
 const STORE_SCENE := "res://Scenes/store/store.tscn"

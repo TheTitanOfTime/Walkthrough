@@ -1,5 +1,8 @@
 extends RefCounted
 
+const SessionState := preload("res://scripts/domain/session_state.gd")
+const LevelConfig := preload("res://scripts/domain/level_config.gd")
+
 
 func test() -> bool:
 	var state := SessionState.new()

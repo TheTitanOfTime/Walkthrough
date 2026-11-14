@@ -1,5 +1,8 @@
 extends RefCounted
 
+const SessionState := preload("res://scripts/domain/session_state.gd")
+const CheckoutGate := preload("res://scripts/store/checkout_gate.gd")
+
 
 func test() -> bool:
 	return _allows_when_complete(1, 3) and _allows_when_complete(2, 4) and _allows_when_complete(3, 5)

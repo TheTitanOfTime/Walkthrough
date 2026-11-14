@@ -1,6 +1,8 @@
 class_name SessionState
 extends RefCounted
 
+const LevelConfig := preload("res://scripts/domain/level_config.gd")
+
 signal changed
 
 enum Phase { START, LEVEL_SELECT, SHOPPING, CHECKOUT }

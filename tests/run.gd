@@ -1,7 +1,17 @@
 extends SceneTree
 
+const _WARM_SCRIPTS := [
+	"res://scripts/domain/level_config.gd",
+	"res://scripts/domain/session_state.gd",
+	"res://scripts/store/zone_gate.gd",
+	"res://scripts/store/checkout_gate.gd",
+	"res://scripts/app/screen_kit.gd",
+]
+
 
 func _initialize() -> void:
+	for warm_path in _WARM_SCRIPTS:
+		load(warm_path)
 	var names: Array[String] = []
 	var folder := DirAccess.open("res://tests")
 	if folder == null:
@@ -18,9 +28,18 @@ func _initialize() -> void:
 	names.sort()
 	var ok := true
 	for test_name in names:
-		var script: GDScript = load("res://tests/%s" % test_name)
+		var path := "res://tests/%s" % test_name
+		var script: GDScript = load(path) as GDScript
+		if script == null:
+			ok = false
+			push_error("failed to load %s" % test_name)
+			continue
+		if not script.can_instantiate():
+			ok = false
+			push_error("failed to compile %s" % test_name)
+			continue
 		var runner = script.new()
-		if not runner.test():
+		if runner == null or not runner.has_method("test") or not runner.test():
 			ok = false
 			print("failed %s" % test_name)
 	if ok:

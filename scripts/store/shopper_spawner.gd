@@ -1,6 +1,8 @@
 class_name ShopperSpawner
 extends Node3D
 
+const LevelConfig := preload("res://scripts/domain/level_config.gd")
+
 @export var shopper_scene: PackedScene
 
 const SHOPPER_SCRIPT := preload("res://scripts/store/shopper.gd")
@@ -30,10 +32,8 @@ static func find_navigation(root: Node) -> NavigationRegion3D:
 	if root == null:
 		return null
 	if root is NavigationRegion3D and root.name == "Navigation":
-		return root as NavigationRegion3D
+		return root
 	for child in root.get_children():
-		if child is NavigationRegion3D and child.name == "Navigation":
-			return child as NavigationRegion3D
 		var found := find_navigation(child)
 		if found != null:
 			return found
