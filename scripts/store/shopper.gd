@@ -18,8 +18,7 @@ func setup(nav_region: NavigationRegion3D) -> void:
 	if nav_region == null:
 		return
 	_nav_map = nav_region.get_navigation_map()
-	if _agent != null and _nav_map.is_valid():
-		_agent.set_navigation_map(_nav_map)
+	_bind_agent_map()
 
 
 func _ready() -> void:
@@ -29,9 +28,14 @@ func _ready() -> void:
 	_agent.avoidance_enabled = false
 	_agent.path_desired_distance = 0.5
 	_agent.target_desired_distance = 0.6
-	if _nav_map.is_valid():
-		_agent.set_navigation_map(_nav_map)
+	_bind_agent_map()
 	_wait_left = randf_range(0.2, 0.6)
+
+
+func _bind_agent_map() -> void:
+	if _agent == null or not _nav_map.is_valid():
+		return
+	_agent.set_navigation_map(_nav_map)
 
 
 func _physics_process(delta: float) -> void:

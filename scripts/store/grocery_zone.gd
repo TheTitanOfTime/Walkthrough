@@ -10,7 +10,23 @@ const ZoneGate := preload("res://scripts/store/zone_gate.gd")
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	Session.state.changed.connect(_sync_level)
+	_ensure_marker()
 	_sync_level()
+
+
+func _ensure_marker() -> void:
+	if has_node("Marker"):
+		return
+	var mesh := MeshInstance3D.new()
+	mesh.name = "Marker"
+	var box := BoxMesh.new()
+	box.size = Vector3(1.2, 1.4, 1.2)
+	mesh.mesh = box
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.2, 0.55, 0.35, 0.45)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mesh.material_override = mat
+	add_child(mesh)
 
 
 func _exit_tree() -> void:

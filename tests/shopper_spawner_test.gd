@@ -18,6 +18,20 @@ func test() -> bool:
 		return false
 	if ShopperSpawner.desired_count(level_3) != 20:
 		return false
+	var shelf := Node3D.new()
+	shelf.name = "tall_shelf2"
+	var cashier := Node3D.new()
+	cashier.name = "Cashier"
+	var names_ok := ShopperSpawner.looks_like_shelf(shelf) and not ShopperSpawner.looks_like_shelf(cashier)
+	shelf.free()
+	cashier.free()
+	if not names_ok:
+		return false
+	var blocked := PackedVector3Array([Vector3(0, 0, 0)])
+	if ShopperSpawner.is_clear_of_shelves(Vector3(0.2, 0, 0), blocked, 0.9):
+		return false
+	if not ShopperSpawner.is_clear_of_shelves(Vector3(3, 0, 3), blocked, 0.9):
+		return false
 	return _finds_navigation_not_cashier()
 
 

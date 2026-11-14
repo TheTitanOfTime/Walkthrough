@@ -14,19 +14,30 @@
       color: #1d1a16;
       background: #f3ecdf;
     }
-    h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+    h1 { font-size: 1.75rem; margin-bottom: 0.35rem; }
+    p { color: #5e584e; }
     table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
     th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #5e584e44; }
-    a { color: #2c5b4d; }
+    .actions { display: grid; gap: 0.75rem; margin-top: 1.25rem; }
+    a.button {
+      display: block;
+      text-decoration: none;
+      text-align: center;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      background: #2c5b4d;
+      color: #f7f3ea;
+      font-size: 1.05rem;
+    }
   </style>
 </head>
 <body>
   <h1>supermarket</h1>
-  <p>Therapist page. Pick an intensity, then open the game export.</p>
+  <p>Therapist site. Select a mode for the patient. The game loads that level in the store. When checkout finishes, the browser returns here.</p>
   <table>
     <thead>
       <tr>
-        <th>Level</th>
+        <th>Mode</th>
         <th>People</th>
         <th>Zones</th>
         <th>Checkout</th>
@@ -34,25 +45,29 @@
     </thead>
     <tbody>
       <tr>
-        <td>1</td>
+        <td>Level 1</td>
         <td>0</td>
         <td>3 (Milk, Bread, Apples)</td>
         <td>Self checkout</td>
       </tr>
       <tr>
-        <td>2</td>
+        <td>Level 2</td>
         <td>10</td>
         <td>4 (+ Eggs)</td>
         <td>Self checkout</td>
       </tr>
       <tr>
-        <td>3</td>
+        <td>Level 3</td>
         <td>20</td>
         <td>5 (+ Rice)</td>
         <td>Cashier</td>
       </tr>
     </tbody>
   </table>
-  <p><a href="http://127.0.0.1:8077/">Open game</a> (serve <code>build/web</code> on port 8077).</p>
+  <div class="actions">
+    <a class="button" href="play/index.html?level=1">Start level 1 for patient</a>
+    <a class="button" href="play/index.html?level=2">Start level 2 for patient</a>
+    <a class="button" href="play/index.html?level=3">Start level 3 for patient</a>
+  </div>
 </body>
 </html>

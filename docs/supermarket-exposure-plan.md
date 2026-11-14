@@ -15,15 +15,16 @@ Implemented.
 - The start screen is `Scenes/app/start.tscn`. The title is `supermarket` and the button says `Start`.
 - Level select is `Scenes/app/level_select.tscn`. The three buttons are built from the level resources.
 - The counter, the item list, `Pay`, and the cashier `Next` prompts are built by `scripts/store/checkout.gd`.
-- `project.godot` opens the start screen and loads the `Session` autoload.
+- `project.godot` opens `res://Scenes/app/start.tscn` and loads the `Session` autoload. Do not point the main scene at the store UID.
 - The session rules, the three level resources, and the headless tests are in place.
 - Store logic scripts live under `scripts/store/` (`player.gd`, `grocery_zone.gd`, `shopper.gd`, `shopper_spawner.gd`, plus the existing gate and checkout scripts).
-- The therapist page is `site/index.html`. It lists the three levels and links the game at `http://127.0.0.1:8077/`.
+- Browser demo is one site: therapist opens `build/web/index.html` (from `site/index.html`), selects a mode, and the patient plays `play/index.html?level=N` in the store. No in-game Start/level-select on that path. Checkout returns to the therapist page. Use `Scripts/serve_web_demo.sh`.
+- `ShopperSpawner` instances `LevelConfig.npc_count` shoppers on the nav mesh and skips points near shelf-like nodes. Grocery zones show a translucent marker so the patient can find them.
 - Until `Scenes/store/store.tscn` exists, `Scenes/app/session.tscn` shows checkout plus `Enter` buttons from `scripts/app/session_screen.gd`. Each button calls `collect` for one zone on the active level.
 
 Not implemented.
 
-- Polished shopper art (capsule stand-ins spawn until `shopper_scene` is set).
+- Optional custom `shopper_scene` (default now instances `character-employee.glb` with collision).
 
 `Scenes/store/store.tscn` is wired from the supermarket art blockout: `Player`, five grocery zones, `Navigation`, `ShopperSpawner`, `Checkout`, and `Cashier`. `Session.begin_level` opens that scene. Zone positions are approximate near shelves and can be nudged in the editor.
 
@@ -33,7 +34,7 @@ Web export uses preset `Web` in `export_presets.cfg` (threads off, `addons/Godot
 godot --headless --path . --export-release "Web" build/web/index.html
 ```
 
-Serve with `python3 -m http.server 8077` from `build/web`, then open `site/index.html` or `http://127.0.0.1:8077/`.
+Prefer `scripts/serve_web_demo.sh` (exports into `build/web/play/`, copies the therapist page to `build/web/index.html`, serves port 8077). Open `http://127.0.0.1:8077/` first.
 
 ## Attach the store scripts
 
@@ -52,7 +53,7 @@ Humans create `Scenes/store/store.tscn` in the editor. Code does not write that 
 | `Checkout` | `Node3D` | `res://scripts/store/checkout.gd` |
 | `Cashier` | `Node3D` | none |
 
-`player.gd` reads WASD and the arrow keys with `Input.is_physical_key_pressed`. It does not use an input map or mouse look. It adds the body to the `player` group. It creates a `Camera3D` when the node has none, makes that camera current, and keeps it behind the body. Add a `CollisionShape3D` on `Player`. Without a shape, the body falls.
+`player.gd` is first-person: InputMap `forward`/`backward`/`left`/`right` (WASD + arrows), mouse look while captured, Esc toggles capture, click recaptures. It adds the body to the `player` group, makes `Camera3D` current at eye height, and hides third-person mesh children. Add a `CollisionShape3D` on `Player`. Without a shape, the body falls.
 
 Set `zone_id` on each grocery zone to `milk`, `bread`, `apples`, `eggs`, or `rice`, matching the node. Put the zone mesh and a `CollisionShape3D` under the `Area3D`. `grocery_zone.gd` calls `ZoneGate.keeps`. A zone that is not on the active level hides, disables its collision shape, and does not call `collect`. On enter, the zone calls `Session.state.collect` only for a body named `Player` or a body in the `player` group, and only when `ZoneGate.keeps` is true for that id.
 

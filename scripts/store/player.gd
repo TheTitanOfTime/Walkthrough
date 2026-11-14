@@ -2,8 +2,9 @@ extends CharacterBody3D
 
 const WALK_SPEED := 5.0
 const GRAVITY := 20.0
-const CAMERA_OFFSET := Vector3(0, 1.7, 4.0)
-const LOOK_HEIGHT := 1.2
+const LOOK_SENSITIVITY := 0.0025
+const EYE_HEIGHT := 1.55
+
 
 var _camera: Camera3D
 
@@ -15,8 +16,19 @@ func _ready() -> void:
 		_camera = Camera3D.new()
 		_camera.name = "Camera3D"
 		add_child(_camera)
+	_camera.position = Vector3(0, EYE_HEIGHT, 0)
+	_camera.rotation = Vector3.ZERO
 	_camera.current = true
-	_lock_camera()
+	_hide_third_person_mesh()
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _hide_third_person_mesh() -> void:
+	for child in get_children():
+		if child == _camera or child is CollisionShape3D:
+			continue
+		if child is Node3D:
+			(child as Node3D).visible = false
 
 
 func _physics_process(delta: float) -> void:
@@ -33,14 +45,28 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0.0
 	move_and_slide()
-	_lock_camera()
 
 
-func _lock_camera() -> void:
-	_camera.position = CAMERA_OFFSET
-	var target := global_position + Vector3(0, LOOK_HEIGHT, 0)
-	if _camera.global_position.distance_squared_to(target) > 0.01:
-		_camera.look_at(target, Vector3.UP)
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE:
+			if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+			else:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			get_viewport().set_input_as_handled()
+			return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			get_viewport().set_input_as_handled()
+			return
+	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		return
+	if event is InputEventMouseMotion:
+		rotate_y(-event.relative.x * LOOK_SENSITIVITY)
+		_camera.rotate_x(-event.relative.y * LOOK_SENSITIVITY)
+		_camera.rotation.x = clampf(_camera.rotation.x, deg_to_rad(-89.0), deg_to_rad(89.0))
 
 
 static func axes(forward: bool, back: bool, left: bool, right: bool) -> Vector2:
@@ -59,6 +85,9 @@ static func axes(forward: bool, back: bool, left: bool, right: bool) -> Vector2:
 
 
 func _read_move() -> Vector2:
+	var mapped := Input.get_vector("left", "right", "forward", "backward")
+	if mapped != Vector2.ZERO:
+		return mapped
 	return axes(
 		Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP),
 		Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN),
