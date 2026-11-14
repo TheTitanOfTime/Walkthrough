@@ -4,12 +4,11 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://begu11cxumbd7"
-path="res://.godot/imported/building-type-p.glb-d06ac73fc64451b7fb2c61c11602cea5.scn"
+valid=false
 
 [deps]
 
 source_file="res://Assets/kenney_city-kit-suburban_20/Models/GLB format/building-type-p.glb"
-dest_files=["res://.godot/imported/building-type-p.glb-d06ac73fc64451b7fb2c61c11602cea5.scn"]
 
 [params]
 
